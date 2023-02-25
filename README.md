@@ -32,6 +32,8 @@ Spatial features are extracted such as: 1) entropy 2) intensity 3) differential 
 9. Select the timepoint using the cursor button and click on the Aux curve.
 10. Select output filenames and click export results.
 
+## Images
+![Alt text](/images "HDEMG1.JPG")
 
 ## Help
 
