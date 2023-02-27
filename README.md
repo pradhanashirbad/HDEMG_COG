@@ -47,6 +47,9 @@ ex. [@Ashirbad Pradhan](https://pradhanashirbad.github.io)
 
 ## Version History
 
+* 0.3
+    * Added changing epoch size in miliseconds
+    * Various bug fixes and optimizations: graphing issues, reduce the processing points by ten for faster performance 
 * 0.2
     * Various bug fixes and optimizations
     * See [commit change]() or See [release history]()
