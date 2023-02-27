@@ -15,7 +15,7 @@ Spatial features are extracted such as: 1) entropy 2) intensity 3) differential 
 
 ### Dependencies
 
-* Matlab R2016 or higher
+* Matlab R2020a or higher
 * Matlab Statistics and Machine Learning toolbox, Matlab signal processing toolbox
 
 ### Executing program
