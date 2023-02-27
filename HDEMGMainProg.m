@@ -16,12 +16,11 @@ classdef HDEMGMainProg < SignalProcessing
         auxData;
         filteredEMG;
         bipolarEMG;
-        rmsdata;
+        processedEMG;
         normEMG;
         n_plots;
         layout_select;
         diff_channel=[11, 11];
-        f_samp;
         filterFlag;
         bipolarFlaf;
         normFlag;
@@ -38,8 +37,6 @@ classdef HDEMGMainProg < SignalProcessing
             obj.useBipolar = false;
             obj.layoutFlag = 1;
             obj.hSettings = HDEMG_Settings(obj);
-            config;
-            obj.f_samp=F_SAMP;
         end
 
         function [Data, obj] = loaddata(obj)
@@ -60,7 +57,11 @@ classdef HDEMGMainProg < SignalProcessing
             if get(handles_settings.chk_aux,'Value')
                 obj.auxData=Data(:,str2double(get(handles_settings.edt_aux,'String')));
             else
-                obj.auxData=Data(:,1);%initialize 1D array
+                obj.auxData=Data(:,1);%initialize 1D array 
+                obj.filteredEMG = bp_filter(obj,obj.rawEMG);
+                obj.processedEMG = get_rms(obj, obj.filteredEMG);
+                obj.auxData = mean(obj.processedEMG(:,randperm(ncols,6)),2); % when without aux, use EMG data
+                
             end
             guidata(obj.hSettings,handles_settings);
         end
@@ -106,23 +107,23 @@ classdef HDEMGMainProg < SignalProcessing
                 case 1 %RMS
                     if bipolarFlag
                         obj.bipolarEMG = mono2bi(obj,obj.filteredEMG);
-                        obj.rmsdata = get_rms(obj,obj.bipolarEMG);
+                        obj.processedEMG = get_rms(obj,obj.bipolarEMG);
                     else
-                        obj.rmsdata = get_rms(obj, obj.filteredEMG);
+                        obj.processedEMG = get_rms(obj, obj.filteredEMG);
                     end
                 case 2 %MDF
                     if bipolarFlag
                         obj.bipolarEMG = mono2bi(obj,obj.filteredEMG);
-                        obj.rmsdata = get_mdf(obj,obj.bipolarEMG);
+                        obj.processedEMG = get_mdf(obj,obj.bipolarEMG);
                     else
-                        obj.rmsdata = get_mdf(obj, obj.filteredEMG);
+                        obj.processedEMG = get_mdf(obj, obj.filteredEMG);
                     end
                 case 3 %ARV
                     if bipolarFlag
                         obj.bipolarEMG = mono2bi(obj,obj.filteredEMG);
-                        obj.rmsdata = get_arv(obj,obj.bipolarEMG);
+                        obj.processedEMG = get_arv(obj,obj.bipolarEMG);
                     else
-                        obj.rmsdata = get_arv(obj, obj.filteredEMG);
+                        obj.processedEMG = get_arv(obj, obj.filteredEMG);
                     end
 
                 otherwise
@@ -130,18 +131,17 @@ classdef HDEMGMainProg < SignalProcessing
             end
 
             if ~normFlag%no normalization
-                obj.normEMG=obj.rmsdata;
+                obj.normEMG=obj.processedEMG;
             else
-                obj.normEMG=obj.rmsdata./maxval; %normalize to MVC
+                obj.normEMG=obj.processedEMG./maxval; %normalize to MVC
             end
         end
-
 
 
         function obj = loadlayout(obj)
             if isempty(obj.hSettings)
                 obj.hSettings=HDEMG_Settings(obj);
-                disp('Opening Settings again')
+                disp('Error: Restart program')
                 return
             end
             handles_settings = guidata(obj.hSettings);
@@ -154,38 +154,27 @@ classdef HDEMGMainProg < SignalProcessing
                 otherwise
                     disp('choose another one')
             end
-            % use data
-            maxval = round(max(obj.normEMG,[],"all"),2);
-            nrows = size(obj.normEMG,1);
-            ncols = size(obj.normEMG,2);
 
             % load layout
             obj.hLayout=HDEMG_Layout(obj, obj.n_plots);
             handles_layout = guidata(obj.hLayout);
             %update info
-            set(handles_layout.txt_maxval, 'String', num2str(maxval));
             set(handles_layout.edt_filename, 'String', obj.fileName);
 
-            %load plots
-            axes(handles_layout.pax(1))
-            [~,~]=map_8x4(obj.normEMG(floor(nrows/2),1:ncols/2));
-            axes(handles_layout.pax(2))
-            [~,~]=map_8x4(obj.normEMG(floor(nrows/2),ncols/2+1:ncols));
-
             %load aux
-            if ~get(handles_settings.chk_aux,'Value')
-                obj.auxData = mean(obj.normEMG(:,randperm(ncols,6)),2); % when without aux, use RMS data
-            end
             axes(handles_layout.axs_aux)
-            plot(obj.time,obj.auxData); xlim tight;
+            plot(obj.time,obj.auxData); xlim([0,obj.time(end)]);
             hold on
-            plot(obj.time(floor(nrows/2)),obj.auxData(floor(nrows/2)),'o','LineWidth',2,'MarkerSize',5,'MarkerEdgeColor','k');
+            plot(obj.time(floor(length(obj.time)/2)),obj.auxData(floor(length(obj.time)/2)),'o','LineWidth',2,'MarkerSize',5,'MarkerEdgeColor','k');
             hold off
             %update second window
             guidata(obj.hLayout, handles_layout);
         end
 
         function [results_vector,obj] = updatelayout(obj,index)
+            if isempty(index)
+                index = round(length(obj.time)/2);
+            end
             maxval = round(max(obj.normEMG,[],"all"),2);
             obj.lastIndex = index;
             if isempty(obj.hLayout)
@@ -198,13 +187,14 @@ classdef HDEMGMainProg < SignalProcessing
             ncols = size(obj.normEMG,2);
 
             %update map
+            index_for_map = round(index/10);
             for i = 1:obj.n_plots
                 axes(handles_layout.pax(i))
-                [xcg(i),ycg(i)]=map_8x4(data(index,ncols/2*(i-1)+1:ncols/2*i));
+                [xcg(i),ycg(i)]=map_8x4(data(index_for_map,ncols/2*(i-1)+1:ncols/2*i));
             end
             %update cursor
             axes(handles_layout.axs_aux)
-            hold on            
+            hold on
             plot(obj.time(index),obj.auxData(index),'o','LineWidth',2,'MarkerSize',5,'MarkerEdgeColor','k')
             hold off
 
@@ -219,7 +209,8 @@ classdef HDEMGMainProg < SignalProcessing
             y_vector = {};
             ncols = size(data,2);
             for i = 1:obj.n_plots
-                datanum = data(index,ncols/2*(i-1)+1:ncols/2*i);
+                index_for_map = round(index/10);
+                datanum = data(index_for_map,ncols/2*(i-1)+1:ncols/2*i);
                 diff = obj.diff_channel(i);
                 result_from_metrics = get_metrics_rms(obj,datanum,diff);
                 y_vector = [y_vector,strcat('grid',num2str(i)),num2cell(result_from_metrics),num2cell(xcg(i)),num2cell(ycg(i))];
@@ -236,10 +227,9 @@ classdef HDEMGMainProg < SignalProcessing
                 otherwise
                     disp('choose another one')
             end
-
-
-            %add pointer to x plot
         end
+        %add pointer to x plot
+
     end
 end
 

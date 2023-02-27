@@ -60,9 +60,6 @@ config;
 
 % Choose default command line output for HDEMG_Settings
 handles.output = hObject;
-handles.raw = [];
-handles.time = [];
-handles.norm = [];
 handles.toolpath = fullfile(SETTINGS_PATH)
 %input arguments
 if nargin<4
@@ -230,8 +227,15 @@ catch ME
     disp('Processing Error: Select Proper File');
     return
 end
+try
+    handles.controlObject = handles.controlObject.loadlayout();
+    [handles.result,handles.controlObject] = handles.controlObject.updatelayout([]);   
+catch ME
+    disp('Loading Layout Error: Select Proper File and layout settings');
+    return
+end
+ 
 
-handles.controlObject = handles.controlObject.loadlayout();
 %setuplayout(handles,normEMG);
 
 % --- Executes on button press in chk_bpfilter.

@@ -25,7 +25,7 @@ function varargout = HDEMG_Layout(varargin)
 
 % Edit the above text to modify the response to help HDEMG_Layout
 
-% Last Modified by GUIDE v2.5 24-Feb-2023 12:10:03
+% Last Modified by GUIDE v2.5 26-Feb-2023 18:24:37
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -73,13 +73,22 @@ handles.output = hObject;
 handles.diff_channel = 11;
 config;
 handles.f_samp=F_SAMP;
+% set default window size
+switch round(WINDOW_SIZE_MS/125)
+    case 1 %32 x 2
+        set(handles.btn_samp(1),'Value',1);
+    case 2
+        set(handles.btn_samp(2),'Value',1);
+    case 4
+        set(handles.btn_samp(3),'Value',1);
+    case 8
+        set(handles.btn_samp(4),'Value',1);
+    otherwise
+        disp('Incorrect Window Size Selection, choosing Default Value')
+end
 handles.result = {};
 %set up screen
 set(handles.txt_busy,'Visible', 'On');
-
-% % handles menu
-%   fig_menu = handles.fig_menu;
-%   handles_menu = guidata(fig_menu);     %retrieve handles for first GUI
 
 % Set mapping plots
 switch n_plots
@@ -97,10 +106,8 @@ end
 
 
 % Dummy
-a = SignalProcessing;
 rawdata = randn(10000,28);
 disp('dummy data loaded');
-rmsdata  = a.get_rms(rawdata);
 Data_rms=rawdata(1,1:28);
 
 
@@ -281,20 +288,6 @@ guidata(hObject,handles)
 % Hint: get(hObject,'Value') returns toggle state of btn_cursor
 
 
-% --- Executes when selected object is changed in btngroup_samp.
-function y = get_windowsize(handles)% hObject    handle to the selected object in btngroup_samp
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-wsize = get(handles.btn_samp,'Value')';
-if wsize{1} == 1
-    y=round(250*handles.f_samp/1000);
-elseif wsize{2} == 1
-    y=round(500*handles.f_samp/1000);
-elseif wsize{3} == 1
-    y=round(1000*handles.f_samp/1000);
-end
-
-
 % --- Executes on button press in btn_export.
 function btn_export_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_export (see GCBO)
@@ -339,5 +332,39 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % Hint: delete(hObject) closes the figure
 delete(hObject);
 try
-handles.controlObject.hLayout = [];
+    handles.controlObject.hLayout = [];
+end
+
+
+% --- Executes when selected object is changed in btngroup_window.
+function btngroup_window_SelectionChangedFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in btngroup_window
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.controlObject.epochsize = get_windowsize(handles);
+set(handles.txt_busy, 'Visible','on'); pause(0.01);
+[filterFlag, bipolarFlag, normFlag, featureVal] = handles.controlObject.get_processing_settings();
+handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, normFlag, featureVal);
+if (handles.controlObject.lastIndex > 0)
+    [handles.result,handles.controlObject] = handles.controlObject.updatelayout(handles.controlObject.lastIndex);
+else
+    handles.controlObject = handles.controlObject.loadlayout();
+end
+set(handles.txt_busy, 'Visible','off');
+guidata(hObject,handles)
+
+
+% --- Executes when selected object is changed in btngroup_window.
+function y = get_windowsize(handles)% hObject    handle to the selected object in btngroup_samp
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+wsize = get(handles.btn_samp,'Value')';
+if wsize{1}
+    y=round(125*handles.f_samp/1000);
+elseif wsize{2}
+    y=round(250*handles.f_samp/1000);
+elseif wsize{3}
+    y=round(500*handles.f_samp/1000);
+elseif wsize{4}
+    y=round(1000*handles.f_samp/1000);
 end
