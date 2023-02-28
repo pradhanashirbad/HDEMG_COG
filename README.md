@@ -43,19 +43,19 @@ In case of errors while closing the HDEMG windows, make sure to change path to t
 
 Contributors names and contact info
 
-ex. [@Ashirbad Pradhan](https://pradhanashirbad.github.io)
+[@Ashirbad Pradhan](https://pradhanashirbad.github.io)
 
 ## Version History
 
 * 0.4
     * Various bug fixes and optimizations
-    * * See [commit change](commit/a12af50306b28aace6adb2a8f14a4605d2776789) or See [release history]()
+    * * See [commit change](https://github.com/pradhanashirbad/HDEMG_COG/commit/a12af50306b28aace6adb2a8f14a4605d2776789) 
 * 0.3
     * Added changing epoch size in miliseconds
     * Various bug fixes and optimizations: graphing issues, reduce the processing points by ten for faster performance 
 * 0.2
     * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
+    * See [commit change]()
 * 0.1
     * Initial Release
 
