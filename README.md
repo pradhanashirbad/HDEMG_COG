@@ -48,7 +48,9 @@ Contributors names and contact info
 [@Ashirbad Pradhan](https://pradhanashirbad.github.io)
 
 ## Version History
-
+* 0.5
+    * Various bug fixes and optimizations
+    * * See [commit change](https://github.com/pradhanashirbad/HDEMG_COG/commit/5b6d3ae0c5f3e3849a934b0f2fc3c82f31823297) 
 * 0.4
     * Various bug fixes and optimizations
     * * See [commit change](https://github.com/pradhanashirbad/HDEMG_COG/commit/a12af50306b28aace6adb2a8f14a4605d2776789) 
