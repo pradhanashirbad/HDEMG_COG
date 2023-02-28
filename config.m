@@ -5,10 +5,10 @@
 %
 
 %% Path to the data file
-SETTINGS_PATH = 'C:\Users\aprad\Documents\MATLAB\Project_UK\';
+SETTINGS_PATH = pwd;
 
 %% Path to the data file
-DATA_PATH = 'C:\Users\aprad\Documents\MATLAB\';
+DATA_PATH = pwd;
 
 %% Sampling frequency
 F_SAMP = 2000;

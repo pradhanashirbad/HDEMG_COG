@@ -25,7 +25,7 @@ function varargout = HDEMG_Settings(varargin)
 
 % Edit the above text to modify the response to help HDEMG_Settings
 
-% Last Modified by GUIDE v2.5 24-Feb-2023 12:21:59
+% Last Modified by GUIDE v2.5 28-Feb-2023 11:51:44
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -135,9 +135,9 @@ if handles.controlObject.fileName==0
 end
 cd(oldfolder);
 try
-    [Data,handles.controlObject] = handles.controlObject.loaddata();
+    [Data,handles.controlObject] = handles.controlObject.load_data();
 catch ME
-    disp('Error: Select Proper File');
+    disp('Loading Error: Select Proper File');
     return
 end
 set(handles.txt_filename,'String',handles.controlObject.fileName);
@@ -222,15 +222,16 @@ function btn_loadanalysis_Callback(hObject, eventdata, handles)
 %process the signals based on settings
 try
     handles.controlObject = handles.controlObject.load_defaults();
-    [filterFlag, bipolarFlag, normFlag, featureVal] = handles.controlObject.get_processing_settings();
-    handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, normFlag, featureVal);
+    handles.controlObject = handles.controlObject.get_vals_from_settings();
+    [filterFlag, bipolarFlag, featureVal] = handles.controlObject.get_processing_settings();
+    handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, featureVal);
 catch ME
     disp('Processing Error: Select Proper File');
     return
 end
 try
-    handles.controlObject = handles.controlObject.loadlayout();
-    [handles.result,handles.controlObject] = handles.controlObject.updatelayout([]);   
+    handles.controlObject = handles.controlObject.load_layout();
+    [handles.result,handles.controlObject] = handles.controlObject.update_layout([]);   
 catch ME
     disp('Loading Layout Error: Select Proper File and layout settings');
     return
@@ -286,9 +287,9 @@ function uibuttongroup1_SelectionChangedFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 if get(handles.btn_norm1,'Value')
-    set(handles.edt_mvcval,'Enable','On')
+    set(handles.edt_mvcval(:),'Enable','On');
 else
-    set(handles.edt_mvcval,'Enable','Off')
+    set(handles.edt_mvcval(:),'Enable','Off');
 end    
 
 
@@ -304,4 +305,3 @@ cd(handles.toolpath)
 delete(hObject);
 handles.controlObject.hSettings = [];
 end
-

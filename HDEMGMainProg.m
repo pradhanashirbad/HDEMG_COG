@@ -22,8 +22,9 @@ classdef HDEMGMainProg < SignalProcessing
         diff_channel=[11, 11];
         filterFlag;
         bipolarFlaf;
-        normFlag;
         lastIndex = 0;
+        isMVC;
+        maxVal =[1,1,1];
     end
 
     methods(Access = public)
@@ -41,7 +42,7 @@ classdef HDEMGMainProg < SignalProcessing
             obj.epochsize = WINDOW_SIZE_MS*obj.f_samp/1000;
         end
 
-        function [Data, obj] = loaddata(obj)
+        function [Data, obj] = load_data(obj)
             % Intitalize the Controller object and make sure, that a handle to the
             % MainFigure is passed. After passing this handle, a new
             name_ext = strsplit(obj.fileName,'.');
@@ -59,9 +60,36 @@ classdef HDEMGMainProg < SignalProcessing
             obj.filteredEMG = obj.rawEMG;
             handles_settings = guidata(obj.hSettings);
             guidata(obj.hSettings,handles_settings);
+
+        end
+        function obj = get_vals_from_settings(obj)
+            handles_settings = guidata(obj.hSettings);
+            obj.layout_select = get(handles_settings.popup_layout,'Value');
+            switch obj.layout_select
+                case 1 %32 x 2
+                    obj.n_plots = 2;
+                case 2
+                    disp('work in progress try later')
+                otherwise
+                    disp('choose another one')
+            end
+            %normalization values
+            if get(handles_settings.btn_norm3,'Value')||get(handles_settings.btn_norm2,'Value')%no normalization
+                obj.isMVC = false;
+                obj.maxVal = [1,1,1];
+            end
+            if get(handles_settings.btn_norm1,'Value')%normalize to MVC
+                obj.isMVC = true;
+                obj.maxVal = [1,1,1];
+                for i =1:obj.n_plots
+                    obj.maxVal(i) = str2double(get(handles_settings.edt_mvcval(i),'String'));                    
+                end
+                disp(obj.maxVal)
+            end
+            guidata(obj.hSettings,handles_settings);
         end
 
-        function [filterFlag,bipolarFlag,normFlag,featureVal] =  get_processing_settings(obj)
+        function [filterFlag,bipolarFlag,featureVal] =  get_processing_settings(obj)
             if isempty(obj.hSettings)
                 obj.hSettings=HDEMG_Settings(obj);
                 disp('Opening Settings again')
@@ -84,17 +112,10 @@ classdef HDEMGMainProg < SignalProcessing
             else
                 bipolarFlag = false;
             end
-            if get(handles_settings.btn_norm3,'Value')||get(handles.btn_norm2,'Value')%no normalization
-                normFlag = false;
-            end
-            if get(handles_settings.btn_norm1,'Value')%normalize to MVC
-                normFlag = true;
-            end
         end
 
 
-        function obj = sigpro(obj, filterFlag, bipolarFlag, normFlag, featureVal)
-
+        function obj = sigpro(obj, filterFlag, bipolarFlag, featureVal)
             if filterFlag
                 obj.filteredEMG = bp_filter(obj,obj.rawEMG);
             end
@@ -124,37 +145,31 @@ classdef HDEMGMainProg < SignalProcessing
                 otherwise
                     disp('invalid entry')
             end
-
-            if ~normFlag%no normalization
-                obj.normEMG=obj.processedEMG;
-            else
-                obj.normEMG=obj.processedEMG./maxval; %normalize to MVC
-            end
         end
 
-
-        function obj = loadlayout(obj)
+        function obj = load_layout(obj)
             if isempty(obj.hSettings)
                 obj.hSettings=HDEMG_Settings(obj);
                 disp('Error: Restart program')
                 return
             end
             handles_settings = guidata(obj.hSettings);
-            obj.layout_select = get(handles_settings.popup_layout,'Value');
-            switch obj.layout_select
-                case 1 %32 x 2
-                    obj.n_plots = 2;
-                case 2
-                    disp('work in progress try later')
-                otherwise
-                    disp('choose another one')
-            end
 
             % load layout
             if isempty(obj.hLayout)
                 obj.hLayout=HDEMG_Layout(obj, obj.n_plots);
                 handles_layout = guidata(obj.hLayout);
             end
+            %remove unwanted entries
+            switch obj.n_plots
+                case 1
+                    set(handles_layout.edt_mapmax(2:end),'Enable','Off')
+                    set(handles_layout.txt_maxval(2:end),'Enable','Off')
+                case 2
+                    set(handles_layout.edt_mapmax(end),'Enable','Off')
+                    set(handles_layout.txt_maxval(end),'Enable','Off')      
+            end
+
             %update info
             set(handles_layout.edt_filename, 'String', obj.fileName);
 
@@ -165,7 +180,7 @@ classdef HDEMGMainProg < SignalProcessing
                 obj.auxData=obj.Data(:,1);%initialize 1D array
                 obj.filteredEMG = bp_filter(obj,obj.rawEMG);
                 obj.processedEMG = get_rms(obj, obj.filteredEMG,1);
-                obj.auxData = mean(obj.processedEMG(:,randperm(size(obj.processedEMG,2),6)),2); % when without aux, use EMG data
+                obj.auxData = mean(obj.processedEMG(:,randperm(size(obj.processedEMG,2),1)),2); % when without aux, use EMG data
             end
 
             %load aux
@@ -178,26 +193,36 @@ classdef HDEMGMainProg < SignalProcessing
             guidata(obj.hLayout, handles_layout);
         end
 
-        function [results_vector,obj] = updatelayout(obj,index)
+        function [results_vector,obj] = update_layout(obj,index)
             if isempty(index)
                 index = round(length(obj.time)/2);
-            end
-            maxval = round(max(obj.normEMG,[],"all"),2);
+            end            
             obj.lastIndex = index;
             if isempty(obj.hLayout)
                 obj.hLayout=HDEMG_Layout(obj, obj.n_plots);
                 return
             end
             handles_layout = guidata(obj.hLayout);
-            set(handles_layout.txt_maxval, 'String', num2str(maxval));
-            data = obj.normEMG;
-            ncols = size(obj.normEMG,2);
-
+            
+            data = obj.processedEMG;
+            ncols = size(obj.processedEMG,2);
+            
             %update map
             index_for_map = round(index/10);
+            maxval = [0,0,0]; xcg = [0,0,0]; ycg = [0,0,0];
             for i = 1:obj.n_plots
                 axes(handles_layout.pax(i))
-                [xcg(i),ycg(i)]=map_8x4(data(index_for_map,ncols/2*(i-1)+1:ncols/2*i));
+                %all rows - selected columns, check if MVC, otherwise normalize  
+                norm_data = data(:,ncols/2*(i-1)+1:ncols/2*i)./obj.maxVal(i);
+                disp(strcat('Normalization: Divide by:',num2str(obj.maxVal(i))));
+                %use this to calculate normalized max of trial
+                maxval(i) = round(max(norm_data,[],"all"),2);
+                %use index to obtain data to plot
+                mapData = data(index_for_map,ncols/2*(i-1)+1:ncols/2*i);
+                [xcg(i),ycg(i)]=map_8x4(mapData);
+                %calculate max
+                %update text
+                set(handles_layout.txt_maxval(i), 'String', num2str(maxval(i)));
             end
             %update cursor
             axes(handles_layout.axs_aux)
@@ -209,10 +234,10 @@ classdef HDEMGMainProg < SignalProcessing
             filename = get(handles_layout.edt_filename,'String');
             contents = cellstr(get(handles_layout.popup_feature,'String'));
             featurename = contents{get(handles_layout.popup_feature,'Value')};
-            results_vector = [{filename},{featurename},{obj.epochsize*1000/obj.f_samp},get_results(obj,data,index,xcg,ycg)];
+            results_vector = [{filename},{featurename},{obj.epochsize*1000/obj.f_samp},get_results(obj,data,index,xcg,ycg,maxval)];
         end
 
-        function y_vector = get_results(obj,data,index,xcg,ycg)
+        function y_vector = get_results(obj,data,index,xcg,ycg,maxval)
             y_vector = {};
             ncols = size(data,2);
             for i = 1:obj.n_plots
@@ -220,23 +245,22 @@ classdef HDEMGMainProg < SignalProcessing
                 datanum = data(index_for_map,ncols/2*(i-1)+1:ncols/2*i);
                 diff = obj.diff_channel(i);
                 result_from_metrics = get_metrics_rms(obj,datanum,diff);
-                y_vector = [y_vector,strcat('grid',num2str(i)),num2cell(result_from_metrics),num2cell(xcg(i)),num2cell(ycg(i))];
-            end
-            %add pointer to x plot
-        end
-
-        function obj = change_feature(obj,feature)
-            switch feature
-                case 1 %32 x 2
-                    obj.n_plots = 2;
-                case 2
-                    disp('zero')
-                otherwise
-                    disp('choose another one')
+                y_vector = [y_vector,strcat('grid',num2str(i)),num2cell(result_from_metrics),num2cell(maxval(i)),num2cell(xcg(i)),num2cell(ycg(i))];
             end
         end
-        %add pointer to x plot
 
+        function change_minmax(obj)
+            handles_layout = guidata(obj.hLayout);
+            cmin = str2double(get(handles_layout.edt_mapmin,'String'));
+            cmaxs = [1,1,1];
+            for i = 1:obj.n_plots
+                cmaxs(i) = str2double(get(handles_layout.edt_mapmax(i),'String'));
+                axes(handles_layout.pax(i))
+                caxis([cmin, cmaxs(i)]);
+            end
+
+
+        end
     end
 end
 

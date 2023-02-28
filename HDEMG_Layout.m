@@ -25,7 +25,7 @@ function varargout = HDEMG_Layout(varargin)
 
 % Edit the above text to modify the response to help HDEMG_Layout
 
-% Last Modified by GUIDE v2.5 26-Feb-2023 18:24:37
+% Last Modified by GUIDE v2.5 28-Feb-2023 14:47:24
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -141,12 +141,12 @@ function popup_feature_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 set(handles.txt_busy, 'Visible','on'); pause(0.01);
-[filterFlag, bipolarFlag, normFlag, featureVal] = handles.controlObject.get_processing_settings();
-handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, normFlag, featureVal);
+[filterFlag, bipolarFlag, featureVal] = handles.controlObject.get_processing_settings();
+handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, featureVal);
 if (handles.controlObject.lastIndex > 0)
-    [handles.result,handles.controlObject] = handles.controlObject.updatelayout(handles.controlObject.lastIndex);
+    [handles.result,handles.controlObject] = handles.controlObject.update_layout(handles.controlObject.lastIndex);
 else
-    handles.controlObject = handles.controlObject.loadlayout();
+    handles.controlObject = handles.controlObject.load_layout();
 end
 set(handles.txt_busy, 'Visible','off');
 guidata(hObject,handles)
@@ -214,18 +214,18 @@ end
 
 
 
-function edit2_Callback(hObject, eventdata, handles)
-% hObject    handle to edit2 (see GCBO)
+function edt_mapmin_Callback(hObject, eventdata, handles)
+% hObject    handle to edt_mapmin (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit2 as text
-%        str2double(get(hObject,'String')) returns contents of edit2 as a double
+% Hints: get(hObject,'String') returns contents of edt_mapmin as text
+%        str2double(get(hObject,'String')) returns contents of edt_mapmin as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit2_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit2 (see GCBO)
+function edt_mapmin_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edt_mapmin (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -237,18 +237,19 @@ end
 
 
 
-function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function edt_mapmax_Callback(hObject, eventdata, handles)
+% hObject    handle to edt_mapmax (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
+% Hints: get(hObject,'String') returns contents of edt_mapmax as text
+%        str2double(get(hObject,'String')) returns contents of edt_mapmax as a double
+
 
 
 % --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function edt_mapmax_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edt_mapmax (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -282,7 +283,7 @@ set(handles.txt_busy, 'Visible','on');
 xcord=ginput(1)*1000;
 samplenum = round(xcord(1));
 sampf_adjusted = round(samplenum*handles.f_samp/1000);
-[handles.result,handles.controlObject] = handles.controlObject.updatelayout(sampf_adjusted);
+[handles.result,handles.controlObject] = handles.controlObject.update_layout(sampf_adjusted);
 set(handles.txt_busy, 'Visible','off');
 guidata(hObject,handles)
 % Hint: get(hObject,'Value') returns toggle state of btn_cursor
@@ -343,12 +344,12 @@ function btngroup_window_SelectionChangedFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 handles.controlObject.epochsize = get_windowsize(handles);
 set(handles.txt_busy, 'Visible','on'); pause(0.01);
-[filterFlag, bipolarFlag, normFlag, featureVal] = handles.controlObject.get_processing_settings();
-handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, normFlag, featureVal);
+[filterFlag, bipolarFlag, featureVal] = handles.controlObject.get_processing_settings();
+handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, featureVal);
 if (handles.controlObject.lastIndex > 0)
-    [handles.result,handles.controlObject] = handles.controlObject.updatelayout(handles.controlObject.lastIndex);
+    [handles.result,handles.controlObject] = handles.controlObject.update_layout(handles.controlObject.lastIndex);
 else
-    handles.controlObject = handles.controlObject.loadlayout();
+    handles.controlObject = handles.controlObject.load_layout();
 end
 set(handles.txt_busy, 'Visible','off');
 guidata(hObject,handles)
@@ -368,3 +369,11 @@ elseif wsize{3}
 elseif wsize{4}
     y=round(1000*handles.f_samp/1000);
 end
+
+
+% --- Executes on button press in btn_updateminmax.
+function btn_updateminmax_Callback(hObject, eventdata, handles)
+% hObject    handle to btn_updateminmax (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.controlObject.change_minmax();

@@ -1,0 +1,3 @@
+* fix btn cursor, added zero padding to the left
+* add normalization, normalizes to input values
+* add entries for updating color map min and max
