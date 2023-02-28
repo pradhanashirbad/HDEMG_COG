@@ -60,7 +60,7 @@ config;
 
 % Choose default command line output for HDEMG_Settings
 handles.output = hObject;
-handles.toolpath = fullfile(SETTINGS_PATH)
+handles.toolpath = fullfile(SETTINGS_PATH);
 %input arguments
 if nargin<4
     disp('incorrect mode ----- run HDEMGMainProg.m')
@@ -221,6 +221,7 @@ function btn_loadanalysis_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %process the signals based on settings
 try
+    handles.controlObject = handles.controlObject.load_defaults();
     [filterFlag, bipolarFlag, normFlag, featureVal] = handles.controlObject.get_processing_settings();
     handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, normFlag, featureVal);
 catch ME

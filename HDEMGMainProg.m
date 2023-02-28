@@ -8,7 +8,6 @@ classdef HDEMGMainProg < SignalProcessing
     properties(GetAccess = 'public', SetAccess = 'public', Transient = true) % Read-only access from public, but do NOT save
         hSettings;
         hLayout;
-        layoutFlag;
         fileName;
         rawEMG;
         time;
@@ -34,9 +33,12 @@ classdef HDEMGMainProg < SignalProcessing
             % MainFigure is passed. After passing this handle, a new
             % window (hUserWindow) will be created, that will be the
             % feedback/instruction window for the subject
-            obj.useBipolar = false;
-            obj.layoutFlag = 1;
             obj.hSettings = HDEMG_Settings(obj);
+        end
+        function obj = load_defaults(obj)
+            config;
+            obj.f_samp = F_SAMP;
+            obj.epochsize = WINDOW_SIZE_MS*obj.f_samp/1000;
         end
 
         function [Data, obj] = loaddata(obj)
@@ -45,24 +47,17 @@ classdef HDEMGMainProg < SignalProcessing
             name_ext = strsplit(obj.fileName,'.');
             if strcmp(name_ext{2},'mat')
                 load(obj.fileName)
+                obj.Data = Data;
                 obj.rawEMG=Data(:,1:64);
                 obj.time=Time;
             elseif strcmp(name_ext{2},'csv')
                 Data=csvread(obj.fileName);
+                obj.Data = Data;
                 obj.rawEMG=Data(:,2:65);
                 obj.time=Data(:,1);
             end
             obj.filteredEMG = obj.rawEMG;
             handles_settings = guidata(obj.hSettings);
-            if get(handles_settings.chk_aux,'Value')
-                obj.auxData=Data(:,str2double(get(handles_settings.edt_aux,'String')));
-            else
-                obj.auxData=Data(:,1);%initialize 1D array 
-                obj.filteredEMG = bp_filter(obj,obj.rawEMG);
-                obj.processedEMG = get_rms(obj, obj.filteredEMG);
-                obj.auxData = mean(obj.processedEMG(:,randperm(ncols,6)),2); % when without aux, use EMG data
-                
-            end
             guidata(obj.hSettings,handles_settings);
         end
 
@@ -156,10 +151,22 @@ classdef HDEMGMainProg < SignalProcessing
             end
 
             % load layout
-            obj.hLayout=HDEMG_Layout(obj, obj.n_plots);
-            handles_layout = guidata(obj.hLayout);
+            if isempty(obj.hLayout)
+                obj.hLayout=HDEMG_Layout(obj, obj.n_plots);
+                handles_layout = guidata(obj.hLayout);
+            end
             %update info
             set(handles_layout.edt_filename, 'String', obj.fileName);
+
+            %set aux data
+            if get(handles_settings.chk_aux,'Value')
+                obj.auxData=obj.Data(:,str2double(get(handles_settings.edt_aux,'String')));
+            else
+                obj.auxData=obj.Data(:,1);%initialize 1D array
+                obj.filteredEMG = bp_filter(obj,obj.rawEMG);
+                obj.processedEMG = get_rms(obj, obj.filteredEMG,1);
+                obj.auxData = mean(obj.processedEMG(:,randperm(size(obj.processedEMG,2),6)),2); % when without aux, use EMG data
+            end
 
             %load aux
             axes(handles_layout.axs_aux)
@@ -202,7 +209,7 @@ classdef HDEMGMainProg < SignalProcessing
             filename = get(handles_layout.edt_filename,'String');
             contents = cellstr(get(handles_layout.popup_feature,'String'));
             featurename = contents{get(handles_layout.popup_feature,'Value')};
-            results_vector = [{filename},{featurename},get_results(obj,data,index,xcg,ycg)];
+            results_vector = [{filename},{featurename},{obj.epochsize*1000/obj.f_samp},get_results(obj,data,index,xcg,ycg)];
         end
 
         function y_vector = get_results(obj,data,index,xcg,ycg)

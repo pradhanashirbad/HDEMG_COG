@@ -1,0 +1,7 @@
+* added load_defaults, allows user to restart without closing the HDEMG_Settings
+* fixed nansum error
+* fixed filtering, added sampling frequency
+* fixed MDF calculation, added sampling frequency
+* fixed ARV calculation
+* fixed no Aux plot
+* added epoch_ms to the reports

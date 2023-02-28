@@ -34,7 +34,7 @@ index = 0;
 for i = indices
 	index = index+1;
 	% Average and take the square root of each window
-	y(index) = abs(mean(signal(i:i+windowlength-1)));
+	y(index) = mean(abs(signal(i:i+windowlength-1)));
     
 
 end

@@ -22,8 +22,8 @@ for j=1:ncols/4
     ynum = ynum + (j*(sum(z(j,:))));
 end
 
-xcg = xnum/ nansum(nansum(z(:,1:4)));
-ycg = ynum/ nansum(nansum(z(:,1:4)));
+xcg = xnum/ sum(sum(z(:,1:4)));
+ycg = ynum/ sum(sum(z(:,1:4)));
 y1 = xcg;
 y2 = ycg;
 
