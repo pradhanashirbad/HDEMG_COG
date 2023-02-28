@@ -1,6 +1,8 @@
 # HDEMG FEATURE EXTRACTION
 
-The HDEMG tool can be used for extracting spatial information from HDEMG grids. 
+The HDEMG tool can be used for extracting spatial information from HDEMG grids. The work has been described  in our previous works. Please cite: 
+1) [Pradhan, A., Malagon, G., Lagacy, R., Chester, V., & Kuruganti, U. (2020). Effect of age and sex on strength and spatial electromyography during knee extension. Journal of physiological anthropology, 39(1), 1-11](https://jphysiolanthropol.biomedcentral.com/articles/10.1186/s40101-020-00219-9)
+2) [Kuruganti, U., Pradhan, A., & Toner, J. (2021). High-Density Electromyography Provides Improved Understanding of Muscle Function for Those with Amputation. Frontiers in Medical Technology, 3, 690285.](https://www.frontiersin.org/articles/10.3389/fmedt.2021.690285/full)
 
 ## Description
 
