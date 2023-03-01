@@ -25,6 +25,8 @@ classdef HDEMGMainProg < SignalProcessing
         lastIndex = 0;
         isMVC;
         maxVal =[1,1,1];
+        grid_config;
+        cci_grids = [];
     end
 
     methods(Access = public)
@@ -38,6 +40,7 @@ classdef HDEMGMainProg < SignalProcessing
         end
         function obj = load_defaults(obj)
             config;
+            obj.grid_config = GRID_CONFIG;
             obj.f_samp = F_SAMP;
             obj.epochsize = WINDOW_SIZE_MS*obj.f_samp/1000;
         end
@@ -59,10 +62,16 @@ classdef HDEMGMainProg < SignalProcessing
             end
             obj.filteredEMG = obj.rawEMG;
             handles_settings = guidata(obj.hSettings);
+            %validate
+            if size(Data,2) < sum(handles_settings.grid_config)*32
+                disp(strcat("Loadfile Error: There are supposed to be ",num2str(sum(handles_settings.grid_config)*32), " columns"));
+                Data = [];
+            end           
             guidata(obj.hSettings,handles_settings);
 
+
         end
-        function obj = get_vals_from_settings(obj)
+        function obj = get_entries_from_settings(obj)
             handles_settings = guidata(obj.hSettings);
             obj.layout_select = get(handles_settings.popup_layout,'Value');
             switch obj.layout_select
@@ -86,7 +95,25 @@ classdef HDEMGMainProg < SignalProcessing
                 end
                 disp(obj.maxVal)
             end
+            
             guidata(obj.hSettings,handles_settings);
+            %check cci
+            if get(handles_settings.chk_cci,'Value')
+                %validate cci settings
+                val1 = get(handles_settings.popup_agon,'Value');
+                val2 = get(handles_settings.popup_antagon,'Value');
+                if isequal(val1,val2)
+                    disp("WARNING: Using same grids for CCI");
+                elseif ~isequal(handles_settings.grid_config(val1),handles_settings.grid_config(val2))
+                    disp("ERROR: Grids are of unequal length")
+                    obj = []; % force an error
+                else
+                    obj.cci_grids = [val1, val2];
+                    guidata(obj.hSettings,handles_settings);
+                end 
+            else
+                guidata(obj.hSettings,handles_settings); % update obj in handles
+            end        
         end
 
         function [filterFlag,bipolarFlag,featureVal] =  get_processing_settings(obj)
@@ -209,7 +236,7 @@ classdef HDEMGMainProg < SignalProcessing
             
             %update map
             index_for_map = round(index/10);
-            maxval = [0,0,0]; xcg = [0,0,0]; ycg = [0,0,0];
+            maxval = [0,0,0,0]; xcg = [0,0,0,0]; ycg = [0,0,0,0];
             for i = 1:obj.n_plots
                 axes(handles_layout.pax(i))
                 %all rows - selected columns, check if MVC, otherwise normalize  
@@ -229,12 +256,23 @@ classdef HDEMGMainProg < SignalProcessing
             hold on
             plot(obj.time(index),obj.auxData(index),'o','LineWidth',2,'MarkerSize',5,'MarkerEdgeColor','k')
             hold off
+            
+            % if cci is checked
+            if ~isempty(obj.cci_grids)
+                index_for_map = round(index/10);
+                grid_cumusm = cumsum(obj.grid_config);
+                for i = 1:length(obj.cci_grids)
+                    grid_for_cci = grid_cumusm(obj.cci_grids(i));
+                    data_cci(i,:) = data(index_for_map,(grid_for_cci-1)*ncols/2+1:grid_for_cci*ncols/2); 
+                end
+                cci_val = get_metrics_cci(obj,data_cci(1,:),data_cci(2,:));
+            end
 
             %get results
             filename = get(handles_layout.edt_filename,'String');
             contents = cellstr(get(handles_layout.popup_feature,'String'));
             featurename = contents{get(handles_layout.popup_feature,'Value')};
-            results_vector = [{filename},{featurename},{obj.epochsize*1000/obj.f_samp},get_results(obj,data,index,xcg,ycg,maxval)];
+            results_vector = [{filename},{featurename},{obj.epochsize*1000/obj.f_samp},get_results(obj,data,index,xcg,ycg,maxval),{cci_val}];       
         end
 
         function y_vector = get_results(obj,data,index,xcg,ycg,maxval)
@@ -245,7 +283,7 @@ classdef HDEMGMainProg < SignalProcessing
                 datanum = data(index_for_map,ncols/2*(i-1)+1:ncols/2*i);
                 diff = obj.diff_channel(i);
                 result_from_metrics = get_metrics_rms(obj,datanum,diff);
-                y_vector = [y_vector,strcat('grid',num2str(i)),num2cell(result_from_metrics),num2cell(maxval(i)),num2cell(xcg(i)),num2cell(ycg(i))];
+                y_vector = [y_vector,strcat('grid',num2str(i),': ',num2str(size(datanum,2))),num2cell(result_from_metrics),num2cell(maxval(i)),num2cell(xcg(i)),num2cell(ycg(i))];
             end
         end
 
@@ -258,14 +296,6 @@ classdef HDEMGMainProg < SignalProcessing
                 axes(handles_layout.pax(i))
                 caxis([cmin, cmaxs(i)]);
             end
-
-
         end
     end
 end
-
-
-
-%      function IMUCalibrate(obj, hObj, varargin)
-%          obj.controlObject.updateCalibrationData();
-%      end

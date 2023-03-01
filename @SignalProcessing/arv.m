@@ -22,7 +22,9 @@ indices = 1:delta:length(signal);
 % Zeropad signal
 if length(signal) - indices(end) + 1 < windowlength
     if zeropad
-        signal(end+1:indices(end)+windowlength-1) = 0;
+        zeroArr = zeros(windowlength-1,1);
+        signal = [zeroArr;signal];                                  % zero padding to the start
+        %signal(end+1:indices(end)+windowlength-1) = 0;        
     else
         indices = indices(1:find(indices+windowlength-1 <= length(signal), 1, 'last'));
     end

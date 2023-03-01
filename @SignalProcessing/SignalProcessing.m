@@ -36,7 +36,7 @@ classdef SignalProcessing < handle
         function y = get_arv(obj,newdata)
             disp(strcat('calculating: moving window ARV Epoch (samples):', num2str(obj.epochsize)))
             for j = 1:size(newdata,2) %for every channel
-                y(:,j) = arv(obj,newdata(:,j),obj.epochsize,obj.epochsize-1,1); %  MDF using an epoch length of 'epoch_ms' ms
+                y(:,j) = arv(obj,newdata(:,j),obj.epochsize,obj.epochsize-10,1); %  MDF using an epoch length of 'epoch_ms' ms
             end            
         end
         function y = get_metrics_monopolarEMG(obj,newdata)
@@ -48,6 +48,15 @@ classdef SignalProcessing < handle
         function y = get_metrics_rms(obj,rmsdata,diff_ch)
             disp(strcat('calculating: metrics Epoch(samples):', num2str(obj.epochsize)))
             y = get_metrics(obj,rmsdata,diff_ch);            
+        end
+        function y = get_metrics_cci(obj,rmsdata1,rmsdata2)
+            disp(strcat('calculating: cci Epoch(samples):', num2str(obj.epochsize)))
+            if isequal(length(rmsdata1),length(rmsdata2))
+                y = get_cci(obj,rmsdata1,rmsdata2);    
+            else
+                y=[];
+                disp("Error in calculating CCI, grids are unequal length")
+            end
         end
     end
 end

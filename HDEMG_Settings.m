@@ -25,7 +25,7 @@ function varargout = HDEMG_Settings(varargin)
 
 % Edit the above text to modify the response to help HDEMG_Settings
 
-% Last Modified by GUIDE v2.5 28-Feb-2023 11:51:44
+% Last Modified by GUIDE v2.5 01-Mar-2023 12:05:59
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,13 +68,32 @@ else
     handles.controlObject=varargin{1};
 end
 
+% remove extra entries normalize
+set(handles.edt_mvcval(length(GRID_CONFIG)+1:end),'Visible','off')
+set(handles.txt_mvc(length(GRID_CONFIG)+1:end),'Visible','off')
+
+handles.grid_config = GRID_CONFIG;
+% remove extra entries cci
+contents_agon = cellstr(get(handles.popup_agon,'String'));
+contents_agon(length(GRID_CONFIG)+1:end)=[];
+set(handles.popup_agon,'String',contents_agon)
+contents_anta = cellstr(get(handles.popup_antagon,'String'));
+contents_anta(length(GRID_CONFIG)+1:end)=[];
+set(handles.popup_antagon,'String',contents_anta)
+
 % Set defaults
 set(handles.edt_datapath, 'String', DATA_PATH);
 set(handles.edt_mvcval,'Enable','Off');
+set(handles.chk_cci,'Value',0);
 set(handles.btn_loadanalysis,'Enable','Off');
 set(handles.txt_filename,'String','');
+set(handles.txt_ngrids,'String','');
 set(handles.txt_columns,'String','');
 set(handles.txt_rows,'String','');
+
+%set cci defaults
+set(handles.popup_agon,'Enable','Off');
+set(handles.popup_antagon,'Enable','Off');
 
 % Update handles structure
 guidata(hObject, handles);
@@ -135,6 +154,7 @@ if handles.controlObject.fileName==0
 end
 cd(oldfolder);
 try
+    handles.controlObject = handles.controlObject.load_defaults();
     [Data,handles.controlObject] = handles.controlObject.load_data();
 catch ME
     disp('Loading Error: Select Proper File');
@@ -144,8 +164,8 @@ set(handles.txt_filename,'String',handles.controlObject.fileName);
 set(handles.txt_columns,'String',int2str(size(Data,2)));
 set(handles.txt_rows,'String',int2str(size(Data,1)));
 set(handles.btn_loadanalysis,'Enable','On');
+set(handles.txt_ngrids,'String',num2str(length(handles.controlObject.grid_config)));
 guidata(hObject, handles);
-
 
 
 function edt_datapath_Callback(hObject, eventdata, handles)
@@ -222,7 +242,7 @@ function btn_loadanalysis_Callback(hObject, eventdata, handles)
 %process the signals based on settings
 try
     handles.controlObject = handles.controlObject.load_defaults();
-    handles.controlObject = handles.controlObject.get_vals_from_settings();
+    handles.controlObject = handles.controlObject.get_entries_from_settings();
     [filterFlag, bipolarFlag, featureVal] = handles.controlObject.get_processing_settings();
     handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, featureVal);
 catch ME
@@ -304,4 +324,66 @@ try
 cd(handles.toolpath)
 delete(hObject);
 handles.controlObject.hSettings = [];
+end
+
+
+% --- Executes on button press in chk_cci.
+function chk_cci_Callback(hObject, eventdata, handles)
+% hObject    handle to chk_cci (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chk_cci
+if get(hObject,'Value')
+    set(handles.popup_agon,'Enable','On');
+    set(handles.popup_antagon,'Enable','On');
+else
+    set(handles.popup_agon,'Enable','Off');
+    set(handles.popup_antagon,'Enable','Off');
+end  
+
+
+% --- Executes on selection change in popup_agon.
+function popup_agon_Callback(hObject, eventdata, handles)
+% hObject    handle to popup_agon (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popup_agon contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popup_agon
+
+
+% --- Executes during object creation, after setting all properties.
+function popup_agon_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popup_agon (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popup_antagon.
+function popup_antagon_Callback(hObject, eventdata, handles)
+% hObject    handle to popup_antagon (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popup_antagon contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popup_antagon
+
+
+% --- Executes during object creation, after setting all properties.
+function popup_antagon_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popup_antagon (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end

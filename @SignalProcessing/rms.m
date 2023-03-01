@@ -22,7 +22,9 @@ indices = 1:delta:length(signal);
 % Zeropad signal
 if length(signal) - indices(end) + 1 < windowlength
     if zeropad
-        signal(end+1:indices(end)+windowlength-1) = 0;
+        zeroArr = zeros(windowlength-1,1);
+        signal = [zeroArr;signal];                                  % zero padding to the start
+        %signal(end+1:indices(end)+windowlength-1) = 0;             % zero padding to the end
     else
         indices = indices(1:find(indices+windowlength-1 <= length(signal), 1, 'last'));
     end
@@ -36,7 +38,6 @@ index = 0;
 for i = indices
 	index = index+1;
 	% Average and take the square root of each window
-	y(index) = sqrt(mean(signal(i:i+windowlength-1)));
-    
+	y(index) = sqrt(mean(signal(i:i+windowlength-1)));   
 
 end
