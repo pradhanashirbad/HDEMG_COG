@@ -75,3 +75,5 @@ This project is licensed under GPLv2 [https://www.gnu.org/licenses/gpl-2.0.html]
 
 ## Acknowledgments
 
+Timothy Green and Nayeli Marcial from the Human Performance Lab
+
