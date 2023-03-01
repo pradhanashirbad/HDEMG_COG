@@ -47,8 +47,8 @@ In case of errors while closing the HDEMG windows, make sure to change path to t
 
 Contributors names and contact info
 
-* [@Ashirbad Pradhan](https://pradhanashirbad.github.io)
-* [@Usha Kuruganti](https://www.unb.ca/faculty-staff/directory/kinesiology/kuruganti-usha.html)
+* [Ashirbad Pradhan](https://pradhanashirbad.github.io)
+* [Usha Kuruganti](https://www.unb.ca/faculty-staff/directory/kinesiology/kuruganti-usha.html)
 
 ## Version History
 * 0.6
