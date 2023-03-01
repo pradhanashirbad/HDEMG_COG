@@ -36,6 +36,7 @@ Spatial features are extracted such as: 1) entropy 2) intensity 3) differential 
 10. Select output filenames and click export results
 
 ## Images
+<img src="https://github.com/pradhanashirbad/HDEMG_COG/blob/main/images/HDEMG2.JPG" width="20%" >
 <img src="https://github.com/pradhanashirbad/HDEMG_COG/blob/main/images/HDEMG1.JPG" width="70%" >
 
 ## Help
