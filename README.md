@@ -47,15 +47,15 @@ In case of errors while closing the HDEMG windows, make sure to change path to t
 
 Contributors names and contact info
 
-[@Ashirbad Pradhan](https://pradhanashirbad.github.io)
-[@Usha Kuruganti](https://www.unb.ca/faculty-staff/directory/kinesiology/kuruganti-usha.html)
+* [@Ashirbad Pradhan](https://pradhanashirbad.github.io)
+* [@Usha Kuruganti](https://www.unb.ca/faculty-staff/directory/kinesiology/kuruganti-usha.html)
 
 ## Version History
 * 0.6
-    * Various bug fixes and optimizations
+    * Added CoContraction Index, various bug fixes and optimizations
     * * See [commit change](https://github.com/pradhanashirbad/HDEMG_COG/commit/54c419b0524ae9114a93402fe1b49e168bc97ba9s) 
 * 0.5
-    * Various bug fixes and optimizations
+    * Added normalization, Various bug fixes and optimizations
     * * See [commit change](https://github.com/pradhanashirbad/HDEMG_COG/commit/5b6d3ae0c5f3e3849a934b0f2fc3c82f31823297) 
 * 0.4
     * Various bug fixes and optimizations
