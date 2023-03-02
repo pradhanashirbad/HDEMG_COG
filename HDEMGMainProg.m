@@ -266,6 +266,8 @@ classdef HDEMGMainProg < SignalProcessing
                     data_cci(i,:) = data(index_for_map,(grid_for_cci-1)*ncols/2+1:grid_for_cci*ncols/2); 
                 end
                 cci_val = get_metrics_cci(obj,data_cci(1,:),data_cci(2,:));
+                else
+                cci_val = 0;
             end
 
             %get results
