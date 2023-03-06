@@ -157,7 +157,7 @@ try
     handles.controlObject = handles.controlObject.load_defaults();
     [Data,handles.controlObject] = handles.controlObject.load_data();
 catch ME
-    disp('Loading Error: Select Proper File');
+    disp('Loading File Error: Select Proper File');
     return
 end
 set(handles.txt_filename,'String',handles.controlObject.fileName);
@@ -242,7 +242,13 @@ function btn_loadanalysis_Callback(hObject, eventdata, handles)
 %process the signals based on settings
 try
     handles.controlObject = handles.controlObject.load_defaults();
-    handles.controlObject = handles.controlObject.get_entries_from_settings();
+    handles.controlObject = handles.controlObject.get_entries_from_settings();    
+    handles.controlObject = handles.controlObject.validate_layout(); 
+catch ME
+    disp('Validation Error: Update config and select correct layout');
+    return
+end
+try
     [filterFlag, bipolarFlag, featureVal] = handles.controlObject.get_processing_settings();
     handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, featureVal);
 catch ME

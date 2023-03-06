@@ -11,10 +11,10 @@ SETTINGS_PATH = pwd;
 DATA_PATH = pwd;
 
 %% Grid Configuration
-% Follow the convention of grid layout: 1--32 , 2--64. For example, three
-% grids of 32,32 and 64 should be shown as IS_32 = [1,1,2]. One grid of 64
-% should be shown as GRID_CONFIG = [2];
-GRID_CONFIG = [1,1];
+% Follow the convention of grid layout: 32 , 64. For example, three
+% grids of 32,32 and 64 should be shown as GRID_CONFIG = [32,32,64]. One grid of 64
+% should be shown as GRID_CONFIG = [64];
+GRID_CONFIG = [64];
 
 %% Sampling frequency
 F_SAMP = 2000;

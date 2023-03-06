@@ -25,7 +25,7 @@ function varargout = HDEMG_Layout(varargin)
 
 % Edit the above text to modify the response to help HDEMG_Layout
 
-% Last Modified by GUIDE v2.5 28-Feb-2023 14:47:24
+% Last Modified by GUIDE v2.5 03-Mar-2023 10:23:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -94,7 +94,7 @@ set(handles.txt_busy,'Visible', 'On');
 switch n_plots
     case 1 % 64x1 or 32x1
         handles.pax(1) = subplot(n_plots,2,1,'Parent', handles.panel_map);
-        set(handles.pax(1),'Position', [0.05, 0.05, 0.5, 0.9])
+        set(handles.pax(1),'Position', [0.05, 0.03, 0.96, 0.96])
     case 2 %32 x 2 or %64 x 2
         handles.pax(1) = subplot(n_plots,2,1,'Parent', handles.panel_map);
         handles.pax(2) = subplot(n_plots,2,2,'Parent', handles.panel_map);
@@ -112,10 +112,10 @@ Data_rms=rawdata(1,1:28);
 
 
 % Update map
-for i = 1:length(handles.pax)
-    axes(handles.pax(i))
-    [handles.xcg,handles.ycg]=map_8x4(Data_rms);
-end
+% for i = 1:length(handles.pax)
+%     axes(handles.pax(i))
+%     [handles.xcg,handles.ycg]=map_8x4(handles.controlObject,Data_rms);
+% end
 set(handles.txt_busy,'Visible', 'Off');
 % Update handles structure
 guidata(hObject, handles);
@@ -141,6 +141,7 @@ function popup_feature_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 set(handles.txt_busy, 'Visible','on'); pause(0.01);
+handles.controlObject = handles.controlObject.load_defaults();
 [filterFlag, bipolarFlag, featureVal] = handles.controlObject.get_processing_settings();
 handles.controlObject = handles.controlObject.sigpro(filterFlag, bipolarFlag, featureVal);
 if (handles.controlObject.lastIndex > 0)
@@ -285,6 +286,7 @@ samplenum = round(xcord(1));
 sampf_adjusted = round(samplenum*handles.f_samp/1000);
 [handles.result,handles.controlObject] = handles.controlObject.update_layout(sampf_adjusted);
 set(handles.txt_busy, 'Visible','off');
+set(handles.edt_indexnum,'String',num2str(sampf_adjusted));
 guidata(hObject,handles)
 % Hint: get(hObject,'Value') returns toggle state of btn_cursor
 
@@ -342,6 +344,7 @@ function btngroup_window_SelectionChangedFcn(hObject, eventdata, handles)
 % hObject    handle to the selected object in btngroup_window
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+handles.controlObject = handles.controlObject.load_defaults();
 handles.controlObject.epochsize = get_windowsize(handles);
 set(handles.txt_busy, 'Visible','on'); pause(0.01);
 [filterFlag, bipolarFlag, featureVal] = handles.controlObject.get_processing_settings();
@@ -356,7 +359,7 @@ guidata(hObject,handles)
 
 
 % --- Executes when selected object is changed in btngroup_window.
-function y = get_windowsize(handles)% hObject    handle to the selected object in btngroup_samp
+function y = get_windowsize(handles)% hObject    handle to the selected object in btngroup_sp
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 wsize = get(handles.btn_samp,'Value')';
@@ -377,3 +380,34 @@ function btn_updateminmax_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 handles.controlObject.change_minmax();
+
+
+
+function edt_indexnum_Callback(hObject, eventdata, handles)
+% hObject    handle to edt_indexnum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edt_indexnum as text
+%        str2double(get(hObject,'String')) returns contents of edt_indexnum as a double
+try
+set(handles.txt_busy, 'Visible','on');
+samplenum = str2double(get(hObject,'String'));
+[handles.result,handles.controlObject] = handles.controlObject.update_layout(samplenum);
+set(handles.txt_busy, 'Visible','off');
+guidata(hObject,handles)
+catch
+    disp("Entry Error: Enter valid index number")
+end
+
+% --- Executes during object creation, after setting all properties.
+function edt_indexnum_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edt_indexnum (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
