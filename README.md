@@ -51,6 +51,9 @@ Contributors names and contact info
 * [Usha Kuruganti](https://www.unb.ca/faculty-staff/directory/kinesiology/kuruganti-usha.html)
 
 ## Version History
+* 1.0 
+    * Major Update: Added easy-to-add layouts, specific functions for bipolar conversion and mapping
+    * Added user entry for timepoint    
 * 0.6
     * Added CoContraction Index, various bug fixes and optimizations
     * * See [commit change](https://github.com/pradhanashirbad/HDEMG_COG/commit/54c419b0524ae9114a93402fe1b49e168bc97ba9s) 
