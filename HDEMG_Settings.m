@@ -25,7 +25,7 @@ function varargout = HDEMG_Settings(varargin)
 
 % Edit the above text to modify the response to help HDEMG_Settings
 
-% Last Modified by GUIDE v2.5 01-Mar-2023 12:05:59
+% Last Modified by GUIDE v2.5 09-Mar-2023 12:46:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -68,17 +68,25 @@ else
     handles.controlObject=varargin{1};
 end
 
-% remove extra entries normalize
-set(handles.edt_mvcval(length(GRID_CONFIG)+1:end),'Visible','off')
-set(handles.txt_mvc(length(GRID_CONFIG)+1:end),'Visible','off')
+handles.layout_order = ones(1,4);
+try
+    handles.layout_order(1:length(GRID_CONFIG)) = ceil(GRID_CONFIG/32+1);    
+catch 
+    handles.layout_order = [2,1,1,1];
+end
+layoutentry_updated = update_popup(handles.layout_order,handles);
+handles.layout_order = layoutentry_updated;
 
-handles.grid_config = GRID_CONFIG;
+% remove extra entries normalize
+set(handles.edt_mvcval(length(find(handles.layout_order-1))+1:end),'Visible','off')
+set(handles.txt_mvc(length(find(handles.layout_order-1))+1:end),'Visible','off')
+
 % remove extra entries cci
 contents_agon = cellstr(get(handles.popup_agon,'String'));
-contents_agon(length(GRID_CONFIG)+1:end)=[];
+contents_agon(length(find(handles.layout_order-1))+1:end)=[];
 set(handles.popup_agon,'String',contents_agon)
 contents_anta = cellstr(get(handles.popup_antagon,'String'));
-contents_anta(length(GRID_CONFIG)+1:end)=[];
+contents_anta(length(find(handles.layout_order-1))+1:end)=[];
 set(handles.popup_antagon,'String',contents_anta)
 
 % Set defaults
@@ -113,30 +121,6 @@ function varargout = HDEMG_Settings_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 
-% --- Executes on selection change in popup_layout.
-function popup_layout_Callback(hObject, eventdata, handles)
-% hObject    handle to popup_layout (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns popup_layout contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from popup_layout
-
-
-
-% --- Executes during object creation, after setting all properties.
-function popup_layout_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to popup_layout (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
-
-
 % --- Executes on button press in btn_loadfile.
 function btn_loadfile_Callback(hObject, eventdata, handles)
 % hObject    handle to btn_loadfile (see GCBO)
@@ -153,6 +137,11 @@ if handles.controlObject.fileName==0
   return
 end
 cd(oldfolder);
+try %load grids
+    handles.controlObject.GridLayoutObjs = [];%reset grid layouts
+    handles.controlObject = handles.controlObject.create_layouts();
+catch ME
+end
 try
     handles.controlObject = handles.controlObject.load_defaults();
     [Data,handles.controlObject] = handles.controlObject.load_data();
@@ -160,11 +149,18 @@ catch ME
     disp('Loading File Error: Select Proper File');
     return
 end
+try%assign data
+    handles.controlObject.assign_data_to_layouts(handles.controlObject.rawEMG);
+    set(handles.panel_fileinfo,'HighlightColor',"#77AC30",'BorderWidth',2.5);
+    disp("No warnings: Data columns match layout")
+catch ME
+    set(handles.panel_fileinfo,'HighlightColor','r','BorderWidth',2.5);
+end
 set(handles.txt_filename,'String',handles.controlObject.fileName);
 set(handles.txt_columns,'String',int2str(size(Data,2)));
 set(handles.txt_rows,'String',int2str(size(Data,1)));
 set(handles.btn_loadanalysis,'Enable','On');
-set(handles.txt_ngrids,'String',num2str(length(handles.controlObject.grid_config)));
+set(handles.txt_ngrids,'String',num2str(length(find(handles.layout_order-1))));
 guidata(hObject, handles);
 
 
@@ -243,9 +239,8 @@ function btn_loadanalysis_Callback(hObject, eventdata, handles)
 try
     handles.controlObject = handles.controlObject.load_defaults();
     handles.controlObject = handles.controlObject.get_entries_from_settings();    
-    handles.controlObject = handles.controlObject.validate_layout(); 
 catch ME
-    disp('Validation Error: Update config and select correct layout');
+    disp('Settings Error: Invalid cci and normalization Settings');
     return
 end
 try
@@ -255,13 +250,13 @@ catch ME
     disp('Processing Error: Select Proper File');
     return
 end
-try
+% try
     handles.controlObject = handles.controlObject.load_layout();
     [handles.result,handles.controlObject] = handles.controlObject.update_layout([]);   
-catch ME
-    disp('Loading Layout Error: Select Proper File and layout settings');
-    return
-end
+% catch ME
+%     disp('Loading Layout Error: Select Proper File and layout settings');
+%     return
+% end
  
 
 %setuplayout(handles,normEMG);
@@ -392,4 +387,68 @@ function popup_antagon_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in popup_gridlayout.
+function popup_gridlayout_Callback(hObject, eventdata, handles)
+% hObject    handle to popup_gridlayout (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popup_gridlayout contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popup_gridlayout
+layoutentry = cell2mat(get(handles.popup_gridlayout,'Value')');
+layoutentry_updated = update_popup(layoutentry,handles);
+handles.layout_order = layoutentry_updated;
+guidata(hObject, handles);
+try
+    handles.controlObject.GridLayoutObjs = [];%reset grid layouts
+    handles.controlObject = handles.controlObject.create_layouts();
+catch ME
+end
+if ~isempty(handles.controlObject.fileName)
+    try%assign data
+        handles.controlObject.assign_data_to_layouts(handles.controlObject.rawEMG);
+        set(handles.panel_fileinfo,'HighlightColor',"#77AC30",'BorderWidth',2.5);
+    catch ME
+        set(handles.panel_fileinfo,'HighlightColor','r','BorderWidth',2.5);
+    end
+end
+
+
+
+% --- Executes during object creation, after setting all properties.
+function popup_gridlayout_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popup_gridlayout (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes when selected object is changed in btngroup_window.
+function layoutentry_updated = update_popup(layoutentry,handles)% hObject    handle to the selected object in btngroup_sp
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+layoutentry_updated = [2;1;1;1];
+for i=1:length(layoutentry)
+    if (layoutentry(i)-1)
+        layoutentry_updated(i) = layoutentry(i);
+    else
+        layoutentry_updated(i:end) = 1;
+        break
+    end
+end
+for i = 1:length(layoutentry_updated)-1
+    if (layoutentry_updated(i)==1)
+        set(handles.popup_gridlayout(i+1),'Enable','off')
+        set(handles.popup_gridlayout(i+1),'Value',layoutentry_updated(i+1))
+    else
+        set(handles.popup_gridlayout(i+1),'Enable','on')
+        set(handles.popup_gridlayout(i+1),'Value',layoutentry_updated(i+1))
+    end
 end

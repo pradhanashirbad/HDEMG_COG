@@ -11,7 +11,7 @@ classdef SignalProcessing < handle
             obj.epochsize = WINDOW_SIZE_MS*obj.f_samp/1000;
         end
         function y = bp_filter(obj,newdata)
-            disp('Bandpass Fitered')
+            disp('Bandpass fitered')
             y = bandpass_filter(obj,newdata,obj.f_samp);
         end
         function y = get_rms(obj,newdata,stride)
@@ -57,12 +57,15 @@ classdef SignalProcessing < handle
     end
     methods(Access=public)
         function y = bipolar_converter_8x4(obj,newdata)
-            y = mono2bi32(obj,newdata);
+            disp('Bipolar conversion')
+            y = mono2bi32(obj,newdata);            
         end
         function y = bipolar_converter_8x8(obj,newdata)
+            disp('Bipolar conversion')
             y = mono2bi32x2(obj,newdata);
         end
         function y = bipolar_converter_13x5(obj,newdata)
+            disp('Bipolar conversion')
             y = mono2bi65(obj,newdata);
         end
     end

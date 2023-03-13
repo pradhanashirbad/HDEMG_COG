@@ -1,3 +1,2 @@
-* added co-contraction index
-* added manual entry for grid layout
-
+* new class for layouts
+* changed settings to acommodate upto 4 grids (32 or 64)

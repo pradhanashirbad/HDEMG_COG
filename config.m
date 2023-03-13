@@ -12,9 +12,10 @@ DATA_PATH = pwd;
 
 %% Grid Configuration
 % Follow the convention of grid layout: 32 , 64. For example, three
-% grids of 32,32 and 64 should be shown as GRID_CONFIG = [32,32,64]. One grid of 64
-% should be shown as GRID_CONFIG = [64];
-GRID_CONFIG = [64];
+% grids of 32,32 and 64 should be shown as GRID_CONFIG = [32,32,64]. One
+% grid of 64 square should be shown as GRID_CONFIG = [64]; if 64 grid is a rectangle grid (13x5) - note
+% it as 65, hence GRID_CONFIG = [65] or GRID_CONFIG = [32,32,65]
+GRID_CONFIG = [32,32];
 
 %% Sampling frequency
 F_SAMP = 2000;
@@ -22,4 +23,12 @@ F_SAMP = 2000;
 %% Processing window size in ms
 % valid entries are 125, 250, 500 and 1000. Any other will not execute
 WINDOW_SIZE_MS = 250; 
+
+
+
+
+
+
+
+
 

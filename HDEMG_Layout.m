@@ -94,12 +94,32 @@ set(handles.txt_busy,'Visible', 'On');
 switch n_plots
     case 1 % 64x1 or 32x1
         handles.pax(1) = subplot(n_plots,2,1,'Parent', handles.panel_map);
-        set(handles.pax(1),'Position', [0.05, 0.03, 0.96, 0.96])
+        set(handles.pax(1),'Position', [0.05, 0.03, 0.75, 0.96])
     case 2 %32 x 2 or %64 x 2
         handles.pax(1) = subplot(n_plots,2,1,'Parent', handles.panel_map);
         handles.pax(2) = subplot(n_plots,2,2,'Parent', handles.panel_map);
         set(handles.pax(1),'Position', [0.05, 0.05, 0.5, 0.9])
         set(handles.pax(2),'Position', [0.55, 0.05, 0.5, 0.9])
+
+    case 3 %32 x 2 or %64 x 2
+        handles.pax(1) = subplot(n_plots,3,1,'Parent', handles.panel_map);
+        handles.pax(2) = subplot(n_plots,3,2,'Parent', handles.panel_map);
+        handles.pax(3) = subplot(n_plots,3,3,'Parent', handles.panel_map);
+        
+        set(handles.pax(1),'Position', [0.01, 0.05, 0.32, 0.9])
+        set(handles.pax(2),'Position', [0.35, 0.05, 0.32, 0.9])
+        set(handles.pax(3),'Position', [0.7, 0.05, 0.32, 0.9])
+
+    case 4 %32 x 2 or %64 x 2
+        handles.pax(1) = subplot(n_plots,4,1,'Parent', handles.panel_map);
+        handles.pax(2) = subplot(n_plots,4,2,'Parent', handles.panel_map);
+        handles.pax(3) = subplot(n_plots,4,3,'Parent', handles.panel_map);
+        handles.pax(4) = subplot(n_plots,4,4,'Parent', handles.panel_map);
+        
+        set(handles.pax(1),'Position', [0.01, 0.05, 0.27, 0.9])
+        set(handles.pax(2),'Position', [0.25, 0.05, 0.27, 0.9])
+        set(handles.pax(3),'Position', [0.5, 0.05, 0.27, 0.9])
+        set(handles.pax(4),'Position', [0.75, 0.05, 0.27, 0.9])
     otherwise
         disp('invalid layout, try another')
 end
