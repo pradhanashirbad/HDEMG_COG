@@ -51,6 +51,8 @@ Contributors names and contact info
 * [Usha Kuruganti](https://www.unb.ca/faculty-staff/directory/kinesiology/kuruganti-usha.html)
 
 ## Version History
+* 2.0 
+    * Major Update: Added new class for layouts, specific functions for bipolar conversion and mapping  
 * 1.0 
     * Major Update: Added easy-to-add layouts, specific functions for bipolar conversion and mapping
     * Added user entry for timepoint    
