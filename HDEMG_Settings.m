@@ -116,8 +116,9 @@ function btn_loadfile_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %handles=guidata(hObject);
 oldfolder = cd(get(handles.edt_datapath,'String'));
-handles.controlObject.fileName=uigetfile({'*.*'},...
+[baseName, folder] =uigetfile({'*.*'},...
                           'File Selector');
+handles.controlObject.fileName = fullfile(folder,baseName);
 if handles.controlObject.fileName==0
   % user pressed cancel
   disp('incorrect file, try again')

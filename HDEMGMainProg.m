@@ -15,6 +15,7 @@ classdef HDEMGMainProg < SignalProcessing
         auxData;
         lastIndex = 0;
         isMVC;
+        useAux;
         maxVal =[1,1,1,1];
         cci_grids = [];
         GridLayoutObjs;
@@ -200,15 +201,18 @@ classdef HDEMGMainProg < SignalProcessing
             set(handles_layout.edt_filename, 'String', obj.fileName);
 
             %set aux data
+            set(handles_layout.txt_busy,'Visible', 'On');pause(0.05)            
             if get(handles_settings.chk_aux,'Value')
+                obj.useAux = true;
                 obj.auxData=obj.Data(:,str2double(get(handles_settings.edt_aux,'String')));
             else
+                obj.useAux = false;
                 obj.auxData=obj.Data(:,1);%initialize 1D array
                 obj.GridLayoutObjs{1}.filteredEMG = bp_filter(obj,obj.GridLayoutObjs{1}.rawEMG);
                 obj.GridLayoutObjs{1}.processedEMG = get_rms(obj, obj.GridLayoutObjs{1}.filteredEMG,1);
-                obj.auxData = mean(obj.GridLayoutObjs{1}.processedEMG(:,randperm(size(obj.GridLayoutObjs{1}.processedEMG,2),1)),2); % when without aux, use EMG data
+                obj.auxData = mean(obj.GridLayoutObjs{1}.processedEMG(:,randperm(size(obj.GridLayoutObjs{1}.processedEMG,2),10)),2); % when without aux, use EMG data
             end
-
+            set(handles_layout.txt_busy,'Visible', 'Off');
             %load aux
             axes(handles_layout.axs_aux)
             plot(obj.time,obj.auxData); xlim([0,obj.time(end)]);
@@ -231,7 +235,11 @@ classdef HDEMGMainProg < SignalProcessing
             handles_layout = guidata(obj.hLayout);    
             n_layouts = obj.GridLayoutObjs{end}.index;            
             %update maps
-            index_for_map = round(index/10);           
+            if obj.useAux
+                index_for_map = round(index/10); 
+            else
+                index_for_map = round(index);
+            end
             maxval = [0,0,0,0]; xcg = [0,0,0,0]; ycg = [0,0,0,0];grid_results={};
             for i = 1:n_layouts
                 axes(handles_layout.pax(i))
