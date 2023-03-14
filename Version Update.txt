@@ -1,2 +1,4 @@
+* fixed minor bugs
 * new class for layouts
 * changed settings to acommodate upto 4 grids (32 or 64)
+

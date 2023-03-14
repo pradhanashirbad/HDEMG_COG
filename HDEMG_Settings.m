@@ -77,18 +77,6 @@ end
 layoutentry_updated = update_popup(handles.layout_order,handles);
 handles.layout_order = layoutentry_updated;
 
-% remove extra entries normalize
-set(handles.edt_mvcval(length(find(handles.layout_order-1))+1:end),'Visible','off')
-set(handles.txt_mvc(length(find(handles.layout_order-1))+1:end),'Visible','off')
-
-% remove extra entries cci
-contents_agon = cellstr(get(handles.popup_agon,'String'));
-contents_agon(length(find(handles.layout_order-1))+1:end)=[];
-set(handles.popup_agon,'String',contents_agon)
-contents_anta = cellstr(get(handles.popup_antagon,'String'));
-contents_anta(length(find(handles.layout_order-1))+1:end)=[];
-set(handles.popup_antagon,'String',contents_anta)
-
 % Set defaults
 set(handles.edt_datapath, 'String', DATA_PATH);
 set(handles.edt_mvcval,'Enable','Off');
@@ -150,7 +138,7 @@ catch ME
     return
 end
 try%assign data
-    handles.controlObject.assign_data_to_layouts(handles.controlObject.rawEMG);
+    handles.controlObject.assign_data_to_layouts(handles.controlObject.EMGData);
     set(handles.panel_fileinfo,'HighlightColor',"#77AC30",'BorderWidth',2.5);
     disp("No warnings: Data columns match layout")
 catch ME
@@ -161,6 +149,7 @@ set(handles.txt_columns,'String',int2str(size(Data,2)));
 set(handles.txt_rows,'String',int2str(size(Data,1)));
 set(handles.btn_loadanalysis,'Enable','On');
 set(handles.txt_ngrids,'String',num2str(length(find(handles.layout_order-1))));
+set(handles.edt_aux,'String',int2str(size(Data,2)))
 guidata(hObject, handles);
 
 
@@ -409,7 +398,7 @@ catch ME
 end
 if ~isempty(handles.controlObject.fileName)
     try%assign data
-        handles.controlObject.assign_data_to_layouts(handles.controlObject.rawEMG);
+        handles.controlObject.assign_data_to_layouts(handles.controlObject.EMGData);
         set(handles.panel_fileinfo,'HighlightColor',"#77AC30",'BorderWidth',2.5);
     catch ME
         set(handles.panel_fileinfo,'HighlightColor','r','BorderWidth',2.5);
@@ -452,3 +441,19 @@ for i = 1:length(layoutentry_updated)-1
         set(handles.popup_gridlayout(i+1),'Value',layoutentry_updated(i+1))
     end
 end
+% reset extra entries normalize
+set(handles.edt_mvcval(:),'Visible','on')
+set(handles.txt_mvc(:),'Visible','on')
+contents_agon = [{'grid1'};{'grid2'};{'grid3'};{'grid4'}];
+contents_anta = contents_agon;
+
+% remove extra entries cci
+
+% remove extra entries normalize
+set(handles.edt_mvcval(length(find(layoutentry_updated-1))+1:end),'Visible','off')
+set(handles.txt_mvc(length(find(layoutentry_updated-1))+1:end),'Visible','off')
+% remove extra entries cci
+contents_agon(length(find(layoutentry_updated-1))+1:end)=[];
+set(handles.popup_agon,'String',contents_agon)
+contents_anta(length(find(layoutentry_updated-1))+1:end)=[];
+set(handles.popup_antagon,'String',contents_anta)

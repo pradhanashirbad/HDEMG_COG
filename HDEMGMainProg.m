@@ -9,24 +9,14 @@ classdef HDEMGMainProg < SignalProcessing
         hSettings;
         hLayout;
         fileName;
-        rawEMG;
+        EMGData;
         time;
         Data;
         auxData;
-        filteredEMG;
-        bipolarEMG;
-        processedEMG;
-        normEMG;
-        diff_channel=[11, 11];
-        filterFlag;
         lastIndex = 0;
         isMVC;
         maxVal =[1,1,1,1];
         cci_grids = [];
-        bipolarsize = [];
-        mapper ;
-        bipolar_converter =[];
-        useLong = [0,0,0,0]; %store the index of 13x5 grid, used while loading defaults
         GridLayoutObjs;
     end
 
@@ -85,18 +75,18 @@ classdef HDEMGMainProg < SignalProcessing
                 load(obj.fileName)
                 obj.Data = Data;
                 if mod(size(Data,2),32)==1
-                    obj.rawEMG=Data(:,1:end);
+                    obj.EMGData=Data(:,1:end);
                 else
-                    obj.rawEMG=Data(:,1:end-1);
+                    obj.EMGData=Data(:,1:end-1);
                 end  
                 obj.time=Time;
             elseif strcmp(name_ext{2},'csv')
                 Data=csvread(obj.fileName);
                 obj.Data = Data;
                 if mod(size(Data,2),32)==1
-                    obj.rawEMG=Data(:,2:end);
+                    obj.EMGData=Data(:,2:end);
                 else
-                    obj.rawEMG=Data(:,2:end-1);
+                    obj.EMGData=Data(:,2:end-1);
                 end                
                 obj.time=Data(:,1);
             end
@@ -197,7 +187,7 @@ classdef HDEMGMainProg < SignalProcessing
 
             % load layout
             if isempty(obj.hLayout)
-                obj.hLayout=HDEMG_Layout(obj, obj.GridLayoutObjs{end}.index);                
+                obj.hLayout=HDEMG_Analysis(obj, obj.GridLayoutObjs{end}.index);                
             end
             handles_layout = guidata(obj.hLayout);
             %remove unwanted entries
@@ -235,7 +225,7 @@ classdef HDEMGMainProg < SignalProcessing
             end            
             obj.lastIndex = index;
             if isempty(obj.hLayout)
-                obj.hLayout=HDEMG_Layout(obj, obj.GridLayoutObjs{end}.index);
+                obj.hLayout=HDEMG_Analysis(obj, obj.GridLayoutObjs{end}.index);
                 return
             end
             handles_layout = guidata(obj.hLayout);    
@@ -255,7 +245,7 @@ classdef HDEMGMainProg < SignalProcessing
                 mapData = norm_data(index_for_map,:);
                 [xcg(i),ycg(i)]=obj.GridLayoutObjs{i}.mapper(obj,mapData);
                 %get results
-                diff = obj.diff_channel(1);
+                diff = obj.GridLayoutObjs{i}.diff_channel;
                 num_results = [get_metrics_rms(obj,mapData,diff),maxval(i),xcg(i),ycg(i)];
                 grid_info = strcat('Grid',num2str(i),{': '},num2str(size(mapData,2)));
                 grid_results{i} = [grid_info,num2cell(num_results)];
@@ -290,14 +280,14 @@ classdef HDEMGMainProg < SignalProcessing
             for i = 1:n_layouts
                 metrics_all = [metrics_all grid_results{i}];
             end
-            results_vector = [{filename},{featurename},{index},{obj.epochsize*1000/obj.f_samp},metrics_all,num2cell(cci_val)];       
+            results_vector = [{filename},{featurename},{index},{obj.epochsize*1000/obj.f_samp},num2cell(cci_val),metrics_all];       
         end
 
 
         function change_minmax(obj)
             handles_layout = guidata(obj.hLayout);
             cmin = str2double(get(handles_layout.edt_mapmin,'String'));
-            cmaxs = [1,1,1];
+            cmaxs = [1,1,1,1];
             for i = 1:obj.GridLayoutObjs{end}.index
                 cmaxs(i) = str2double(get(handles_layout.edt_mapmax(i),'String'));
                 axes(handles_layout.pax(i))
