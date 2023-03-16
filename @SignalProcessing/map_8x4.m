@@ -40,7 +40,11 @@ pcolor(x,y,z) % a pseudocolor or "checkerboard" plot of matrix z on the grid def
 % The values of the elements of c specify the color in each cell of the plot.
 colormap(jet)
 
-caxis([min(z,[],"all"), max(z,[],"all")]);
+if min(z,[],"all")<max(z,[],"all")
+    caxis([min(z,[],"all"), max(z,[],"all")]);
+else
+    caxis([min(z,[],"all"), min(z,[],"all")+1]);
+end
 axis equal tight
 %axis off
 hold on

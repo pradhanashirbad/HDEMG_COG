@@ -118,7 +118,8 @@ function btn_loadfile_Callback(hObject, eventdata, handles)
 oldfolder = cd(get(handles.edt_datapath,'String'));
 [baseName, folder] =uigetfile({'*.*'},...
                           'File Selector');
-handles.controlObject.fileName = fullfile(folder,baseName);
+fullfile_path_to_use = fullfile(folder,baseName);
+handles.controlObject.fileName = baseName;
 if handles.controlObject.fileName==0
   % user pressed cancel
   disp('incorrect file, try again')
@@ -133,7 +134,7 @@ catch ME
 end
 try
     handles.controlObject = handles.controlObject.load_defaults();
-    [Data,handles.controlObject] = handles.controlObject.load_data();
+    [Data,handles.controlObject] = handles.controlObject.load_data(fullfile_path_to_use);
 catch ME
     disp('Loading File Error: Select Proper File');
     return

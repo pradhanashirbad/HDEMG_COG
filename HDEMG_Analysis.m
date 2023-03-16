@@ -340,7 +340,11 @@ if ~isfile(filename)
 else
     writecell(handles.result,filename,'WriteMode','append')
 end
-winopen(filename)
+
+if ispc
+    winopen(filename)
+end
+   
 
 % dlmwrite(handles.outfilename,[values],'-append')
 

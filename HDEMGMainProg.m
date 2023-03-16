@@ -68,12 +68,12 @@ classdef HDEMGMainProg < SignalProcessing
             end
         end
 
-        function [Data, obj] = load_data(obj)
+        function [Data, obj] = load_data(obj,fullfile_path_to_use)
             % Intitalize the Controller object and make sure, that a handle to the
             % MainFigure is passed. After passing this handle, a new
-            name_ext = strsplit(obj.fileName,'.');
+            name_ext = strsplit(fullfile_path_to_use,'.');
             if strcmp(name_ext{2},'mat')
-                load(obj.fileName)
+                load(fullfile_path_to_use)
                 obj.Data = Data;
                 if mod(size(Data,2),32)==1
                     obj.EMGData=Data(:,1:end);
@@ -82,7 +82,7 @@ classdef HDEMGMainProg < SignalProcessing
                 end  
                 obj.time=Time;
             elseif strcmp(name_ext{2},'csv')
-                Data=csvread(obj.fileName);
+                Data=csvread(fullfile_path_to_use);
                 obj.Data = Data;
                 if mod(size(Data,2),32)==1
                     obj.EMGData=Data(:,2:end);
