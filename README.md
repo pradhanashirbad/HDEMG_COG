@@ -42,6 +42,10 @@ Spatial features are extracted such as: 1) entropy 2) intensity 3) differential 
 ## Demo tutorial
 
 
+https://user-images.githubusercontent.com/86751473/225737752-6b9dcf58-cacf-4b8f-8e2e-6e86c0502619.mov
+
+
+
 ## Help
 
 In case of errors while closing the HDEMG windows, make sure to change path to the original folder containing the code files.
