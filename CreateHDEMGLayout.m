@@ -3,23 +3,24 @@ classdef CreateHDEMGLayout %< SignalProcessing
     %
     % Author: Ashirbad Pradhan, 2023.
     properties(GetAccess = 'public', SetAccess = 'protected', Transient = true)
-        index
-        layout_select
-        bipolarsize
-        mapper
-        bipolar_converter
-        data_range
-        numcols
-        diff_channel
+        index               % keeps track of serial number of layouts . use end to obtain the number of layouts
+        layout_select       % value assigned from the drop down, 1- 32, 2- 64 Sqr, 3- 64 Long
+        data_range          % The starting index (=1) and final index (=32/64) for assigning data to layouts
+        numcols             % The ending index (=32/64) for storing the number of columns .... redundant
+        diff_channel        % For calculation using central channel of the layout. Assigned separately for all layouts
+        bipolarsize         % Monopolar to bipolar reduces the number of channels, bipolarsize stores the column numbers for bipolar data format
+        mapper              % Mapping function for color maps
+        bipolar_converter   % Converting function for monopolar to bipolar
+
     end
     properties(GetAccess = 'public', SetAccess = 'public', Transient = true)
-        rawEMG
-        filteredEMG
-        bipolarEMG
-        processedEMG
-        normEMG
-        isMVC
-        maxVal        
+        rawEMG              % raw EMG data
+        filteredEMG         % if chk_bpfilter = true, get filtered EMG data
+        bipolarEMG          % if chk_bipolar = true, convert to bipolar
+        processedEMG        % get windowed processing for rms, mdf and arv feature extraction
+        normEMG             % divide processedEMG by max RMS value or 1 (no-normalize)
+        isMVC               % true false value for normalize or no-normalize
+        maxVal              % stores max processedEMG value in each layout
     end
     methods(Access = public)
         function obj = CreateHDEMGLayout(index,layout_select)
